@@ -23,20 +23,16 @@ import java.util.regex.Pattern;
 /*
 Modify:
   06.10.21  ключи
+  15.05.23  пароль для приложения в аккаунте pfoobmen и удалил поддержку sqlite
 */
 
 public class R {
-  final static String Ver = "1.1"; // номер версии
+  final static String Ver = "1.2"; // номер версии
 
   // разделитель имени каталогов
   public  final   static String sep = System.getProperty("file.separator");
   private static  String tempdir = System.getProperty("java.io.tmpdir");
   public  final   static String TmpDir = tempdir.endsWith(sep)? tempdir: tempdir+sep;
-
-  // рабочая БД
-  static final String WorkDB = "rmail.db";   // CentOs Linux (в Windows будет D:\var\Gmir\*.db)
-  static public Database  db;   // база данных проекта
-  // выдать временный каталог (всегда завершается Разделителем)
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики
@@ -71,85 +67,84 @@ public class R {
   /**
    * Проверить наличие базы данных и создать нужные таблицы
    */
-  static void testDb()
-  {
-    final String create_tables =
-        "CREATE TABLE _Info(key VARCHAR(32)  PRIMARY KEY, val text);" +
-        "CREATE TABLE keys (usr VARCHAR(255) PRIMARY KEY, publickey TEXT, privatekey TEXT, mykey INT unique, wdat DATETIME DEFAULT (DATETIME('now', 'localtime')));" +
-            "INSERT INTO _Info(key) VALUES('Email');" +
-            "INSERT INTO _Info(key) VALUES('SmtpUser');" +
-            "INSERT INTO _Info(key) VALUES('SmtpPwd');" +
-            "INSERT INTO _Info(key) VALUES('SmtpServer');" +
-            "INSERT INTO _Info(key) VALUES('SmtpPort');" +
-            "INSERT INTO _Info(key) VALUES('SmtpSSL');" +
-            "INSERT INTO _Info(key) VALUES('PostProtocol');" +
-            "INSERT INTO _Info(key) VALUES('PostUser');" +
-            "INSERT INTO _Info(key) VALUES('PostPwd');" +
-            "INSERT INTO _Info(key) VALUES('PostServer');" +
-            "INSERT INTO _Info(key) VALUES('PostPort');" +
-            "INSERT INTO _Info(key) VALUES('PostSSL');" +
-            "";
-    if(db == null) {
-      db = new DatabaseSqlite(WorkDB);
-      //
-      String str = db.Dlookup("SELECT COUNT(*) FROM _Info;");
-      if (str == null) {
-        // ошибка чтения из БД - создадим таблицу
-        String[] ssql = create_tables.split(";"); // разобьем на отдельные операторы
-        for (String ss: ssql)
-          db.ExecSql(ss);
-      }
-    }
-  }
+//  static void testDb()
+//  {
+//    final String create_tables =
+//        "CREATE TABLE _Info(key VARCHAR(32)  PRIMARY KEY, val text);" +
+//        "CREATE TABLE keys (usr VARCHAR(255) PRIMARY KEY, publickey TEXT, privatekey TEXT, mykey INT unique, wdat DATETIME DEFAULT (DATETIME('now', 'localtime')));" +
+//            "INSERT INTO _Info(key) VALUES('Email');" +
+//            "INSERT INTO _Info(key) VALUES('SmtpUser');" +
+//            "INSERT INTO _Info(key) VALUES('SmtpPwd');" +
+//            "INSERT INTO _Info(key) VALUES('SmtpServer');" +
+//            "INSERT INTO _Info(key) VALUES('SmtpPort');" +
+//            "INSERT INTO _Info(key) VALUES('SmtpSSL');" +
+//            "INSERT INTO _Info(key) VALUES('PostProtocol');" +
+//            "INSERT INTO _Info(key) VALUES('PostUser');" +
+//            "INSERT INTO _Info(key) VALUES('PostPwd');" +
+//            "INSERT INTO _Info(key) VALUES('PostServer');" +
+//            "INSERT INTO _Info(key) VALUES('PostPort');" +
+//            "INSERT INTO _Info(key) VALUES('PostSSL');" +
+//            "";
+//    if(db == null) {
+//      db = new DatabaseSqlite(WorkDB);
+//      //
+//      String str = db.Dlookup("SELECT COUNT(*) FROM _Info;");
+//      if (str == null) {
+//        // ошибка чтения из БД - создадим таблицу
+//        String[] ssql = create_tables.split(";"); // разобьем на отдельные операторы
+//        for (String ss: ssql)
+//          db.ExecSql(ss);
+//      }
+//    }
+//  }
 
   /**
    * Загрузить параметры по-умолчанию из БД таблицы "_Info"
    */
-  static public void loadDefault()
-  {
-    testDb(); // проверить наличие БД
-    // прочитать из БД значения часов выдержки
-    SmtpMailCC      = getInfo(db, "SmtpMailCC",     SmtpMailCC);       // кому отсылать копии
-    // прочитать из БД значения аккаунта
-    Email         = getInfo(db, "Email",      Email);            // адрес отправителя
-    SmtpUser      = getInfo(db, "SmtpUser",   SmtpUser);      // имя пользователя для передачи писем
-    SmtpPwd       = getInfo(db, "SmtpPwd",    SmtpPwd);        // пароль пользователя для передачи
-    SmtpServer    = getInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
-    SmtpPort      = getInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
-    SmtpSSL       = getInfo(db, "SmtpSSL",    SmtpSSL);        // протокол SSL SMTP сервера
-    PostProtocol  = getInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
-    PostUser      = getInfo(db, "PostUser",   PostUser);      // имя пользователя для приема писем
-    PostPwd       = getInfo(db, "PostPwd",    PostPwd);        // пароль пользователя для приема
-    PostServer    = getInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
-    PostPort      = getInfo(db, "PostPort",   PostPort);      // порт IMAP/POP3 сервера
-    PostSSL       = getInfo(db, "PostSSL",    PostSSL);        // протокол SSL IMAP/POP3 сервера
-  }
+//  static public void loadDefault()
+//  {
+//    testDb(); // проверить наличие БД
+//    // прочитать из БД значения часов выдержки
+//    SmtpMailCC      = getInfo(db, "SmtpMailCC",     SmtpMailCC);       // кому отсылать копии
+//    // прочитать из БД значения аккаунта
+//    Email         = getInfo(db, "Email",      Email);            // адрес отправителя
+//    SmtpUser      = getInfo(db, "SmtpUser",   SmtpUser);      // имя пользователя для передачи писем
+//    SmtpPwd       = getInfo(db, "SmtpPwd",    SmtpPwd);        // пароль пользователя для передачи
+//    SmtpServer    = getInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
+//    SmtpPort      = getInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
+//    SmtpSSL       = getInfo(db, "SmtpSSL",    SmtpSSL);        // протокол SSL SMTP сервера
+//    PostProtocol  = getInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
+//    PostUser      = getInfo(db, "PostUser",   PostUser);      // имя пользователя для приема писем
+//    PostPwd       = getInfo(db, "PostPwd",    PostPwd);        // пароль пользователя для приема
+//    PostServer    = getInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
+//    PostPort      = getInfo(db, "PostPort",   PostPort);      // порт IMAP/POP3 сервера
+//    PostSSL       = getInfo(db, "PostSSL",    PostSSL);        // протокол SSL IMAP/POP3 сервера
+//  }
 
-  static public void dbClose()
-  {
-    if(db != null) {
-      db.close();
-      db = null;
-    }
-  }
+//  static public void dbClose()
+//  {
+//    if(db != null) {
+//      db.close();
+//      db = null;
+//    }
+//  }
 
-
-  static public void putAccount()
-  {
-    // положить в БД значения аккаунта
-    putInfo(db, "Email", Email);            // адрес отправителя
-    putInfo(db, "SmtpUser", SmtpUser);      // имя пользователя для передачи писем
-    putInfo(db, "SmtpPwd", SmtpPwd);        // пароль пользователя для передачи
-    putInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
-    putInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
-    putInfo(db, "SmtpSSL", SmtpSSL);        // протокол SSL SMTP сервера
-    putInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
-    putInfo(db, "PostUser", PostUser);      // имя пользователя для приема писем
-    putInfo(db, "PostPwd", PostPwd);        // пароль пользователя для приема
-    putInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
-    putInfo(db, "PostPort", PostPort);      // порт IMAP/POP3 сервера
-    putInfo(db, "PostSSL", PostSSL);        // протокол SSL IMAP/POP3 сервера
-  }
+//  static public void putAccount()
+//  {
+//    // положить в БД значения аккаунта
+//    putInfo(db, "Email", Email);            // адрес отправителя
+//    putInfo(db, "SmtpUser", SmtpUser);      // имя пользователя для передачи писем
+//    putInfo(db, "SmtpPwd", SmtpPwd);        // пароль пользователя для передачи
+//    putInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
+//    putInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
+//    putInfo(db, "SmtpSSL", SmtpSSL);        // протокол SSL SMTP сервера
+//    putInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
+//    putInfo(db, "PostUser", PostUser);      // имя пользователя для приема писем
+//    putInfo(db, "PostPwd", PostPwd);        // пароль пользователя для приема
+//    putInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
+//    putInfo(db, "PostPort", PostPort);      // порт IMAP/POP3 сервера
+//    putInfo(db, "PostSSL", PostSSL);        // протокол SSL IMAP/POP3 сервера
+//  }
 
   /**
    * Пауза выполнения программы
@@ -283,11 +278,11 @@ public class R {
    * @param defaultValue  значение по-умолчанию
    * @return значение ключа
    */
-  private static int getInfo(Database db, String keyName, int defaultValue)
-  {
-      String val = getInfo(db, keyName, Integer.toString(defaultValue));
-      return Integer.parseInt(val);
-  }
+//  private static int getInfo(Database db, String keyName, int defaultValue)
+//  {
+//      String val = getInfo(db, keyName, Integer.toString(defaultValue));
+//      return Integer.parseInt(val);
+//  }
 
   /**
    * Получить из таблицы _Info значение ключа, а если таблицы или ключа нет, то вернуть значение по-умолчанию
@@ -297,14 +292,14 @@ public class R {
    * @param defaultValue  значение по-умолчанию
    * @return значение ключа (строка)
    */
-  private static String getInfo(Database db, String keyName, String defaultValue)
-  {
-      String val = db.Dlookup("SELECT val FROM _Info WHERE key='" + keyName + "'");
-      if(val == null /*|| val.length() < 1*/) {
-          return defaultValue;
-      }
-      return val;
-  }
+//  private static String getInfo(Database db, String keyName, String defaultValue)
+//  {
+//      String val = db.Dlookup("SELECT val FROM _Info WHERE key='" + keyName + "'");
+//      if(val == null /*|| val.length() < 1*/) {
+//          return defaultValue;
+//      }
+//      return val;
+//  }
 
   /**
    * Записать в таблицу параметров числовое значение
@@ -313,10 +308,10 @@ public class R {
    * @param keyName   имя ключа
    * @param Value     значение
    */
-  private static void putInfo(Database db, String keyName, int Value)
-  {
-    putInfo(db, keyName, Integer.toString(Value));
-  }
+//  private static void putInfo(Database db, String keyName, int Value)
+//  {
+//    putInfo(db, keyName, Integer.toString(Value));
+//  }
 
   /**
    * Записать в таблицу параметров строковое значение
@@ -325,15 +320,15 @@ public class R {
    * @param keyName   имя ключа
    * @param Value     значение
    */
-  private static void putInfo(Database db, String keyName, String Value)
-  {
-    String val;
-    if(Value == null /*|| Value.length() < 1*/)
-      val = "null";
-    else
-      val = db.s2s(Value);
-    db.ExecSql("UPDATE _Info SET val=" + val + " WHERE key='" + keyName + "'");
-  }
+//  private static void putInfo(Database db, String keyName, String Value)
+//  {
+//    String val;
+//    if(Value == null /*|| Value.length() < 1*/)
+//      val = "null";
+//    else
+//      val = db.s2s(Value);
+//    db.ExecSql("UPDATE _Info SET val=" + val + " WHERE key='" + keyName + "'");
+//  }
 
   /**
    * преобразовать секунды UNIX эпохи в строку даты

@@ -16,11 +16,7 @@ package ae;
 public class Main {
 
     public static void main(String[] args) {
-
-	      // write your code here
-
-        // пока обойдемся без БД
-        //R.loadDefault();
+        // write your code here
         //
         String outDir = ".";
         // Ключи:
