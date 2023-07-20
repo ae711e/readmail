@@ -24,10 +24,12 @@ import java.util.regex.Pattern;
 Modify:
   06.10.21  ключи
   15.05.23  пароль для приложения в аккаунте pfoobmen и удалил поддержку sqlite
+  20.07.23  расширения регистронезависимые, сохраняем все подходящие вложения
+
 */
 
 public class R {
-  final static String Ver = "1.2"; // номер версии
+  final static String Ver = "1.3"; // номер версии
 
   // разделитель имени каталогов
   public  final   static String sep = System.getProperty("file.separator");
@@ -36,12 +38,6 @@ public class R {
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики
-  static public boolean   Key_Delete  = false;  // далить письмо, если записано
-
-  // тема письма с зашифрованным изображением документа
-  static public String  Subj_letter  = "Sqlite DB AS Revizor"; //"(spyimage)_Image_of_document_for_person";
-  // расширение нужных файлов
-  static public String Attach_Ext = ".dbzip";
 
   static int    TimeOut     = 30000;         // тайм-аут мс
   //

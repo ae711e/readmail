@@ -3,7 +3,8 @@
  *
  */
 /*
-    Чтение почты на предмет получения файла sqlite
+    Чтение почты на предмет получения файла c нужным расширением
+    в письме с темой, содержащей заданную строку
  */
 
 package ae;
@@ -23,10 +24,13 @@ public class Worker {
 
   /**
    * Чтение последнего по времени файла и запись его в каталог
-   * @param   outDir выходной каталог
+   * @param subjectStr  строка темы
+   * @param extenStr    расширение файла вложения
+   * @param outDir      выходной каталог
+   * @param deleteMsg   удалять сообщение, если оно было записано
    * @return  была ли запись
    */
-  int read(String outDir)
+  int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg)
   {
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss_");
     int result = 0;
@@ -50,49 +54,59 @@ public class Worker {
       folder.open(Folder.READ_WRITE); //  READ_ONLY
       messages = folder.getMessages();
       // Отобразить поля from (только первый отправитель) и subject сообщений
-      for(Message m: messages) {
+      for(Message mess: messages) {
         //String fuel = m.getFrom()[0].toString(); // первый отправитель
         //String from = extractEmail(fuel);  // выделим чистый e-mail
         // дата письма
         // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
-        Date dt = m.getSentDate();
-        if(dt == null) dt = m.getReceivedDate();  // как вариант
+        Date dt = mess.getSentDate();
+        if(dt == null) dt = mess.getReceivedDate();  // как вариант
         if(dt == null) dt = new Date(); // ну просто сейчас :-)
+        String prefixAtt = sformat.format(dt); // префикс для сохранения вложений (дата письма)
         // тема письма
-        String subj = m.getSubject();
+        String subj = mess.getSubject();
         //
         R.printStr("письмо - дата: " + dt + ". тема: " + subj);
         // проверим тему
-        if(subj.contains(R.Subj_letter)) {
+        int sootv = 0;  // кол-во подходящих вложений
+        if(subj.contains(subjectStr)) {
           // Письмо с изображением
-          Object content = m.getContent();
+          Object content = mess.getContent();
           if(content instanceof Multipart) {
             // письмо может содержать вложения
             // поищем их
             Multipart mp = (Multipart) content;
-            BodyPart bp = getAttachedPart(mp);
-            if(bp != null) {
-              // файл вложения
-              String ssb    = bp.getFileName();
-              String attach = MimeUtility.decodeText(ssb);  // раскодируем на всякий случай имя файла
-              // проверим расширение вложения
-              if(attach.contains(R.Attach_Ext)) {
-                // дата письма
-                // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
-                String prefix = sformat.format(dt);
-                // записать вложение в выходной каталог
-                String sfln;
-                sfln = writeAttachFile(bp, outDir, prefix);
-                if(sfln != null) {
-                  System.out.println("  записан файл " + sfln);
-                  // если надо удалить
-                  if (R.Key_Delete) {
-                    m.setFlag(Flags.Flag.DELETED, true);
+            // ***************************************************
+            // прочитаем все вложения
+            int n = mp.getCount();
+            for (int i = 0; i < n; i++) {
+              BodyPart bp = mp.getBodyPart(i); // часть сообщения
+              String fileAttach = bp.getFileName();
+              if (fileAttach != null) {
+                // -----------------------------------------------
+                // имеем дело с частью - вложением файла
+                String attach = MimeUtility.decodeText(fileAttach);  // раскодируем на всякий случай имя файла
+                // проверим расширение вложения (все расширения к нижнему регистру)
+                String lowercase = attach.toLowerCase();
+                if (lowercase.endsWith(extenStr)) {
+                  // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
+                  // записать вложение в выходной каталог
+                  String sfln;
+                  sfln = writeAttachFile(bp, outDir, prefixAtt);
+                  if (sfln != null) {
+                    System.out.println("  записан файл " + sfln);
+                    sootv++;  // записано в данном письме
+                    // всеобщий подсчет записанных вложений
+                    result++;
                   }
-                  result++;
                 }
               }
             }
+          }
+          // если были соответствующие вложения и нужно надо удалить
+          // ставим метку на удаление
+          if (sootv > 0 && deleteMsg) {
+            mess.setFlag(Flags.Flag.DELETED, true);
           }
         }
       }
@@ -108,40 +122,11 @@ public class Worker {
     return result;
   }
 
-
-  /**
-   * Получить часть с файлом-вложением из составного письма.
-   * Если вложений несколько,то возвращается часть с вложением.
-   * @param mp  тело письма
-   * @return часть с файлом-вложением или null
-   */
-  private BodyPart  getAttachedPart(Multipart mp)
-  {
-    try {
-      int n = mp.getCount();
-      for (int i = 0; i < n; i++) {
-        BodyPart bp = mp.getBodyPart(i); // часть сообщения
-        String fileAttach = bp.getFileName();
-        if (fileAttach != null)
-          return bp;
-      }
-    } catch (Exception e) {
-      System.err.println("?-Error-Worker.getAttachedPart(): " + e.getMessage());
-    }
-    return null; // нет частей с вложением
-  }
-
-  /**
-   * Записать файл вложением из части сообщения во временный каталог
-   * @param bp  часть тела сообщения
-   *
-   */
-
   /**
    * Записать файл вложением из части сообщения в указанный каталог
-   * @param bp
-   * @param outDir выходной каталог
-   * @param prefix префикс имени выходного файла
+   * @param bp      часть сообщения
+   * @param outDir  выходной каталог
+   * @param prefix  префикс имени выходного файла
    * @return имя записанного файла
    */
   private String writeAttachFile(BodyPart bp, String outDir, String prefix) {
