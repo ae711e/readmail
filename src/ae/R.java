@@ -31,18 +31,12 @@ public class R {
   final static String Ver = "1.4"; // номер версии
 
   // разделитель имени каталогов
-  public  final   static String sep = System.getProperty("file.separator");
-  private final static  String tempdir = System.getProperty("java.io.tmpdir");
-  public  final static String  TmpDir = tempdir.endsWith(sep)? tempdir: tempdir+sep;
+  //public  final   static String sep = System.getProperty("file.separator");
+  //private final static  String tempdir = System.getProperty("java.io.tmpdir");
+  //public  final static String  TmpDir = tempdir.endsWith(sep)? tempdir: tempdir+sep;
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики
-
-  // static int    TimeOut     = 30000;         // тайм-аут мс
-  //
-  // почтовые дела
-  // адрес получателя почты (можно несколько с разделением по ;)
-  //static String SmtpMailCC     = null;              // адрес получателя копии почты
 
   public static String Email      = _r.email;       // адрес почты
   //
@@ -65,25 +59,26 @@ public class R {
     static void loadDefault()
     {
         // http://stackoverflow.com/questions/2815404/load-properties-file-in-jar
-        // Отобразим версию
-        System.out.println("Ver. " + Ver);
         Properties props = new Properties();
         try {
             props.load(R.class.getResourceAsStream("res/default.properties"));
             // почта
             //SmtpServer = r2s(props, "SmtpServer", SmtpServer);
             //SmtpMailTo = r2s(props, "SmtpMailTo", SmtpMailTo);
-            Email           = r2s(props, "Email", Email);               // адрес почты
+            Email           = r2s(props,"Email", Email);                // адрес почты
             PostProtocol    = r2s(props,"PostProtocol", PostProtocol);  // imap pop3 протокол сервера
             PostUser        = r2s(props,"PostUser", PostUser);          // имя пользователя посылки почтового сервера
             PostPwd         = r2s(props,"PostPwd", PostPwd);            // пароль пользователя почтового сервера
             PostServer      = r2s(props,"PostServer", PostServer);      // адрес почтового сервера
             PostPort        = r2s(props,"PostPort", PostPort);          // порт
             PostSSL         = r2s(props,"PostSSL", PostSSL);            // используется протокол SSL
-                        //
+            //
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
+        // Отобразим версию
+        System.out.println("Ver. " + Ver + "     e-mail: " + Email);
     }
 
     /**
