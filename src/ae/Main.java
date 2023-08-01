@@ -65,6 +65,8 @@ public class Main {
             System.exit(2);
         }
         //
+        R.loadDefault();
+
         Worker  w = new Worker();
         int r;
         r = w.read(Subj, Extn, outDir, Delete);   // прочитать сообщения

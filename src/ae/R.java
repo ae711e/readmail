@@ -6,9 +6,7 @@
 
 package ae;
 
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
-import javafx.stage.Stage;
+import java.util.Properties;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -25,122 +23,120 @@ Modify:
   06.10.21  ключи
   15.05.23  пароль для приложения в аккаунте pfoobmen и удалил поддержку sqlite
   20.07.23  расширения регистронезависимые, сохраняем все подходящие вложения
+  01.08.23  берет параметры из properties
 
 */
 
 public class R {
-  final static String Ver = "1.3"; // номер версии
+  final static String Ver = "1.4"; // номер версии
 
   // разделитель имени каталогов
   public  final   static String sep = System.getProperty("file.separator");
-  private static  String tempdir = System.getProperty("java.io.tmpdir");
-  public  final   static String TmpDir = tempdir.endsWith(sep)? tempdir: tempdir+sep;
+  private final static  String tempdir = System.getProperty("java.io.tmpdir");
+  public  final static String  TmpDir = tempdir.endsWith(sep)? tempdir: tempdir+sep;
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики
 
-  static int    TimeOut     = 30000;         // тайм-аут мс
+  // static int    TimeOut     = 30000;         // тайм-аут мс
   //
   // почтовые дела
   // адрес получателя почты (можно несколько с разделением по ;)
-  static String SmtpMailCC     = null;              // адрес получателя копии почты
+  //static String SmtpMailCC     = null;              // адрес получателя копии почты
 
   public static String Email      = _r.email;       // адрес почты
-  //
-  public static String SmtpUser   = _r.smtpuser;   // имя пользователя получения от почтового сервера
-  public static String SmtpPwd    = _r.smtppwd;    // пароль пользователя почтового сервера
-  public static String SmtpServer = _r.smtpserver;  // адрес почтового сервера
-  public static String SmtpPort   = _r.smtpport;    // (25) порт почтового сервера
-  public static String SmtpSSL    = _r.smtpssl;     // протокол SSL SMTP сервера
   //
   public static String PostProtocol = _r.protocol;  // imap pop3 протокол сервера
   public static String PostUser   = _r.postuser;    // имя пользователя посылки почтового сервера
   public static String PostPwd    = _r.postpwd;     // пароль пользователя почтового сервера
   public static String PostServer = _r.postserver;  // адрес почтового сервера
   public static String PostPort   = _r.postport;    // порт
-  public static String PostSSL    = _r.postssl;     // протокол SSL
+  public static String PostSSL    = _r.postssl;     // используется протокол SSL
+  //
+  public static String SmtpUser   = _r.smtpuser;   // имя пользователя получения от почтового сервера
+  public static String SmtpPwd    = _r.smtppwd;    // пароль пользователя почтового сервера
+  public static String SmtpServer = _r.smtpserver;  // адрес почтового сервера
+  public static String SmtpPort   = _r.smtpport;    // (25) порт почтового сервера
+  public static String SmtpSSL    = _r.smtpssl;     // используется протокол SSL SMTP сервера
 
-  /**
-   * Проверить наличие базы данных и создать нужные таблицы
-   */
-//  static void testDb()
-//  {
-//    final String create_tables =
-//        "CREATE TABLE _Info(key VARCHAR(32)  PRIMARY KEY, val text);" +
-//        "CREATE TABLE keys (usr VARCHAR(255) PRIMARY KEY, publickey TEXT, privatekey TEXT, mykey INT unique, wdat DATETIME DEFAULT (DATETIME('now', 'localtime')));" +
-//            "INSERT INTO _Info(key) VALUES('Email');" +
-//            "INSERT INTO _Info(key) VALUES('SmtpUser');" +
-//            "INSERT INTO _Info(key) VALUES('SmtpPwd');" +
-//            "INSERT INTO _Info(key) VALUES('SmtpServer');" +
-//            "INSERT INTO _Info(key) VALUES('SmtpPort');" +
-//            "INSERT INTO _Info(key) VALUES('SmtpSSL');" +
-//            "INSERT INTO _Info(key) VALUES('PostProtocol');" +
-//            "INSERT INTO _Info(key) VALUES('PostUser');" +
-//            "INSERT INTO _Info(key) VALUES('PostPwd');" +
-//            "INSERT INTO _Info(key) VALUES('PostServer');" +
-//            "INSERT INTO _Info(key) VALUES('PostPort');" +
-//            "INSERT INTO _Info(key) VALUES('PostSSL');" +
-//            "";
-//    if(db == null) {
-//      db = new DatabaseSqlite(WorkDB);
-//      //
-//      String str = db.Dlookup("SELECT COUNT(*) FROM _Info;");
-//      if (str == null) {
-//        // ошибка чтения из БД - создадим таблицу
-//        String[] ssql = create_tables.split(";"); // разобьем на отдельные операторы
-//        for (String ss: ssql)
-//          db.ExecSql(ss);
-//      }
-//    }
-//  }
+    /**
+     * загрузка значений параметров по-умолчанию из файла res/default.properties
+     */
+    static void loadDefault()
+    {
+        // http://stackoverflow.com/questions/2815404/load-properties-file-in-jar
+        // Отобразим версию
+        System.out.println("Ver. " + Ver);
+        Properties props = new Properties();
+        try {
+            props.load(R.class.getResourceAsStream("res/default.properties"));
+            // почта
+            //SmtpServer = r2s(props, "SmtpServer", SmtpServer);
+            //SmtpMailTo = r2s(props, "SmtpMailTo", SmtpMailTo);
+            Email           = r2s(props, "Email", Email);               // адрес почты
+            PostProtocol    = r2s(props,"PostProtocol", PostProtocol);  // imap pop3 протокол сервера
+            PostUser        = r2s(props,"PostUser", PostUser);          // имя пользователя посылки почтового сервера
+            PostPwd         = r2s(props,"PostPwd", PostPwd);            // пароль пользователя почтового сервера
+            PostServer      = r2s(props,"PostServer", PostServer);      // адрес почтового сервера
+            PostPort        = r2s(props,"PostPort", PostPort);          // порт
+            PostSSL         = r2s(props,"PostSSL", PostSSL);            // используется протокол SSL
+                        //
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-  /**
-   * Загрузить параметры по-умолчанию из БД таблицы "_Info"
-   */
-//  static public void loadDefault()
-//  {
-//    testDb(); // проверить наличие БД
-//    // прочитать из БД значения часов выдержки
-//    SmtpMailCC      = getInfo(db, "SmtpMailCC",     SmtpMailCC);       // кому отсылать копии
-//    // прочитать из БД значения аккаунта
-//    Email         = getInfo(db, "Email",      Email);            // адрес отправителя
-//    SmtpUser      = getInfo(db, "SmtpUser",   SmtpUser);      // имя пользователя для передачи писем
-//    SmtpPwd       = getInfo(db, "SmtpPwd",    SmtpPwd);        // пароль пользователя для передачи
-//    SmtpServer    = getInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
-//    SmtpPort      = getInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
-//    SmtpSSL       = getInfo(db, "SmtpSSL",    SmtpSSL);        // протокол SSL SMTP сервера
-//    PostProtocol  = getInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
-//    PostUser      = getInfo(db, "PostUser",   PostUser);      // имя пользователя для приема писем
-//    PostPwd       = getInfo(db, "PostPwd",    PostPwd);        // пароль пользователя для приема
-//    PostServer    = getInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
-//    PostPort      = getInfo(db, "PostPort",   PostPort);      // порт IMAP/POP3 сервера
-//    PostSSL       = getInfo(db, "PostSSL",    PostSSL);        // протокол SSL IMAP/POP3 сервера
-//  }
+    /**
+     * Выдать строковое значение из файла свойств, либо, если там
+     * нет такого свойства, вернуть значение по-умолчанию
+     * @param p                     свойства
+     * @param NameProp              имя свойства
+     * @param strResourceDefault    значение по-умолчанию
+     * @return  значение свойства, а если его нет, то значение по-умолчанию
+     */
+    private static String r2s(Properties p, String NameProp, String strResourceDefault)
+    {
+        String str = p.getProperty(NameProp);
+        if(str == null) {
+            str = strResourceDefault;
+        }
+        return str;
+    }
 
-//  static public void dbClose()
-//  {
-//    if(db != null) {
-//      db.close();
-//      db = null;
-//    }
-//  }
+    /**
+     * Выдать числовое (long) значение из файла свойств, либо, если там
+     * нет такого свойства, вернуть значение по-умолчанию
+     * @param p                     свойства
+     * @param NameProp              имя свойства
+     * @param lngResourceDefault    значение по-умолчанию
+     * @return  значение свойства, а если его нет, то значение по-умолчанию
+     */
+    private long r2s(Properties p, String NameProp, long lngResourceDefault)
+    {
+        String str = p.getProperty(NameProp);
+        if(str == null) {
+            str = String.valueOf(lngResourceDefault);
+        }
+        return Long.parseLong(str);
+    }
 
-//  static public void putAccount()
-//  {
-//    // положить в БД значения аккаунта
-//    putInfo(db, "Email", Email);            // адрес отправителя
-//    putInfo(db, "SmtpUser", SmtpUser);      // имя пользователя для передачи писем
-//    putInfo(db, "SmtpPwd", SmtpPwd);        // пароль пользователя для передачи
-//    putInfo(db, "SmtpServer", SmtpServer);  // адрес SMTP почтового сервера
-//    putInfo(db, "SmtpPort",   SmtpPort);    // порт SMTP сервера
-//    putInfo(db, "SmtpSSL", SmtpSSL);        // протокол SSL SMTP сервера
-//    putInfo(db, "PostProtocol", PostProtocol); // протокол приема писем из почтового сервера
-//    putInfo(db, "PostUser", PostUser);      // имя пользователя для приема писем
-//    putInfo(db, "PostPwd", PostPwd);        // пароль пользователя для приема
-//    putInfo(db, "PostServer", PostServer);  // адрес IMAP/POP3 почтового сервера
-//    putInfo(db, "PostPort", PostPort);      // порт IMAP/POP3 сервера
-//    putInfo(db, "PostSSL", PostSSL);        // протокол SSL IMAP/POP3 сервера
-//  }
+    /**
+     * Выдать числовое (int) значение из файла свойств, либо, если там
+     * нет такого свойства, вернуть значение по-умолчанию
+     * @param p                     свойства
+     * @param NameProp              имя свойства
+     * @param intResourceDefault    значение по-умолчанию
+     * @return  значение свойства, а если его нет, то значение по-умолчанию
+     */
+    private int r2s(Properties p, String NameProp, int intResourceDefault)
+    {
+        String str = p.getProperty(NameProp);
+        if(str == null) {
+            str = String.valueOf(intResourceDefault);
+        }
+        return Integer.parseInt(str);
+    }
+
 
   /**
    * Пауза выполнения программы
@@ -157,8 +153,8 @@ public class R {
 
   /**
    * прочитать ресурсный файл
-   * by novel  http://skipy-ru.livejournal.com/5343.html
-   * https://docs.oracle.com/javase/tutorial/deployment/webstart/retrievingResources.html
+   * by novel  <a href="http://skipy-ru.livejournal.com/5343.html">...</a>
+   * <a href="https://docs.oracle.com/javase/tutorial/deployment/webstart/retrievingResources.html">...</a>
    * @param nameRes - имя ресурсного файла
    * @return -содержимое ресурсного файла
    */
@@ -266,65 +262,6 @@ public class R {
       return sb.toString();
   }
 
-  /**
-   * Получить из таблицы _Info значение ключа, а если таблицы или ключа нет, то вернуть значение по-умолчанию
-   * CREATE TABLE _Info(key text PRIMARY KEY, val text)
-   * @param db            база данных с таблицей Info
-   * @param keyName       имя ключа
-   * @param defaultValue  значение по-умолчанию
-   * @return значение ключа
-   */
-//  private static int getInfo(Database db, String keyName, int defaultValue)
-//  {
-//      String val = getInfo(db, keyName, Integer.toString(defaultValue));
-//      return Integer.parseInt(val);
-//  }
-
-  /**
-   * Получить из таблицы _Info значение ключа, а если таблицы или ключа нет, то вернуть значение по-умолчанию
-   * CREATE TABLE _Info(key text PRIMARY KEY, val text)
-   * @param db            база данных с таблицей Info
-   * @param keyName       имя ключа
-   * @param defaultValue  значение по-умолчанию
-   * @return значение ключа (строка)
-   */
-//  private static String getInfo(Database db, String keyName, String defaultValue)
-//  {
-//      String val = db.Dlookup("SELECT val FROM _Info WHERE key='" + keyName + "'");
-//      if(val == null /*|| val.length() < 1*/) {
-//          return defaultValue;
-//      }
-//      return val;
-//  }
-
-  /**
-   * Записать в таблицу параметров числовое значение
-   * CREATE TABLE _Info(key text PRIMARY KEY, val text)
-   * @param db        база данных с таблицей Info
-   * @param keyName   имя ключа
-   * @param Value     значение
-   */
-//  private static void putInfo(Database db, String keyName, int Value)
-//  {
-//    putInfo(db, keyName, Integer.toString(Value));
-//  }
-
-  /**
-   * Записать в таблицу параметров строковое значение
-   * CREATE TABLE _Info(key text PRIMARY KEY, val text)
-   * @param db        база данных с таблицей Info
-   * @param keyName   имя ключа
-   * @param Value     значение
-   */
-//  private static void putInfo(Database db, String keyName, String Value)
-//  {
-//    String val;
-//    if(Value == null /*|| Value.length() < 1*/)
-//      val = "null";
-//    else
-//      val = db.s2s(Value);
-//    db.ExecSql("UPDATE _Info SET val=" + val + " WHERE key='" + keyName + "'");
-//  }
 
   /**
    * преобразовать секунды UNIX эпохи в строку даты
@@ -340,28 +277,6 @@ public class R {
     return jdf.format(date);
   }
 
-  /*
-   * Преобразование строки времени вида ЧЧ:ММ:СС в кол-во секунд
-   * @param str   входная строка времени (0:0:2)
-   * @return  кол-во секунд
-
-  public static int hms2sec(String str)
-  {
-    String[] sar;
-    int result = 0;
-    try {
-      sar = str.split(":", 3);
-      int ih = Integer.parseInt(sar[0]);
-      int im = Integer.parseInt(sar[1]);
-      int is = Integer.parseInt(sar[2]);
-      result = ih * 3600 + im * 60 + is;
-    } catch (Exception e) {
-      //e.printStackTrace();
-      result = -1;
-    }
-    return result;
-  }
-*/
 
   /////////////////////////////////////////////////////////////////////////////////
 
@@ -419,20 +334,8 @@ public class R {
     return fext;
   }
 
-  /**
-   * Получить из события сцену, где оно случилось
-   * @param ae  событие
-   * @return  сцена
-   */
-  public static Stage event2stage(ActionEvent ae)
-  {
-    Node source = (Node) ae.getSource();
-    Stage stage = (Stage) source.getScene().getWindow();
-    return stage;
-  }
-
-  /**
-   * Вывод строки, в заивимости от флага Key_Verbose
+   /**
+   * Вывод строки, в зависимости от флага Key_Verbose
    * @param message сообщение
    */
   public static void printStr(String message)
