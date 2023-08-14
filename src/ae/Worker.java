@@ -77,6 +77,7 @@ public class Worker {
         // проверим тему
         int sootv = 0;  // кол-во подходящих вложений
         if(subj.contains(subjectStr)) {
+          R.sleep(1000);
           // Письмо с изображением
           Object content = mess.getContent();
           if(content instanceof Multipart) {

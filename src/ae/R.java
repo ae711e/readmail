@@ -24,11 +24,12 @@ Modify:
   15.05.23  пароль для приложения в аккаунте pfoobmen и удалил поддержку sqlite
   20.07.23  расширения регистронезависимые, сохраняем все подходящие вложения
   01.08.23  берет параметры из properties
+  14.08.23  перед чтением письма с нужной темой сделать паузу 1 сек
 
 */
 
 public class R {
-  final static String Ver = "1.4"; // номер версии
+  final static String Ver = "1.5"; // номер версии
 
   // разделитель имени каталогов
   //public  final   static String sep = System.getProperty("file.separator");
