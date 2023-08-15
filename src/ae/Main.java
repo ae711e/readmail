@@ -22,6 +22,7 @@ public class Main {
         String Subj   = "???";
         String Extn   = "???";
         boolean Delete = false;
+        boolean Ignore = false;
         // Ключи:
         // буквенные ключи
         // -v       - вывести параметры
@@ -37,12 +38,17 @@ public class Main {
                         break;
 
                     case "-e":
-                        Extn = args[i + 1].toLowerCase();  // нужное расширение
+                        Extn = args[i + 1];  // нужное расширение
                         break;
 
                     case "-d":
                         Delete = true;  // удалять письма
                         break;
+
+                    case "-i":
+                        Ignore = true;  // игнорировать регистр расширения
+                        break;
+
 
                     case "-o":
                         outDir = args[i + 1];  // выходной каталог
@@ -69,7 +75,7 @@ public class Main {
 
         Worker  w = new Worker();
         int r;
-        r = w.read(Subj, Extn, outDir, Delete);   // прочитать сообщения
+        r = w.read(Subj, Extn, outDir, Delete, Ignore);   // прочитать сообщения
         if(r == 0) {
             System.err.println("Сообщений нет");
             System.exit(1);
@@ -85,6 +91,7 @@ public class Main {
           "Формат командной строки:\n" +
           "[-v] [-s \"тема письма\"] [-e \"расширение вложения\"] [-o выходной_каталог] [-d]\n" +
           "-d - удалить письмо, если его вложение записано\n" +
+          "-i - игнорировать регистр расширения\n" +
           "Значения по умолчанию:\n" +
           "выходной каталог - текущий каталог\n" +
           "\n" +

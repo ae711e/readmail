@@ -31,13 +31,14 @@ public class Worker {
 
   /**
    * Чтение последнего по времени файла и запись его в каталог
-   * @param subjectStr  строка темы
-   * @param extenStr    расширение файла вложения
-   * @param outDir      выходной каталог
-   * @param deleteMsg   удалять сообщение, если оно было записано
+   * @param subjectStr      строка темы
+   * @param extenStr        расширение файла вложения
+   * @param outDir          выходной каталог
+   * @param deleteMsg       удалять сообщение, если оно было записано
+   * @param ignoreExtCase   игнорировать регистр расширения
    * @return  была ли запись
    */
-  int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg)
+  int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg, boolean ignoreExtCase)
   {
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss_");
     int result = 0;
@@ -48,6 +49,11 @@ public class Worker {
     // http://toolkas.blogspot.com/2019/02/java.html
     // http://java-online.ru/javax-mail.xhtml
     // http://ryakovlev.blogspot.com/2014/11/java_17.html
+
+    if(ignoreExtCase) {
+      extenStr = extenStr.toLowerCase();  // если игнорируем регистр - сделаем нижним регистром
+    }
+
     try {
       // Получить store
       Store store = Postman.openStore(); // открыть хранилище почтового сервера
@@ -94,9 +100,9 @@ public class Worker {
                 // -----------------------------------------------
                 // имеем дело с частью - вложением файла
                 String attach = MimeUtility.decodeText(fileAttach);  // раскодируем на всякий случай имя файла
-                // проверим расширение вложения (все расширения к нижнему регистру)
-                String lowercase = attach.toLowerCase();
-                if (lowercase.endsWith(extenStr)) {
+                // проверим расширение вложения (если игнор регистра, то все к нижнему регистру)
+                String sa = ignoreExtCase? attach.toLowerCase(): attach;
+                if (sa.endsWith(extenStr)) {
                   // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
                   // записать вложение в выходной каталог
                   String sfln;
