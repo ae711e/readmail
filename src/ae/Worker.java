@@ -82,7 +82,7 @@ public class Worker {
         R.printStr("письмо - дата: " + dt + ". тема: " + subj);
         // проверим тему
         int sootv = 0;  // кол-во подходящих вложений
-        if(subj.contains(subjectStr)) {
+        if(compareStrings(subjectStr, subj)) {
           R.sleep(1000);
           // Письмо с изображением
           Object content = mess.getContent();
@@ -134,6 +134,17 @@ public class Worker {
       System.err.println("Ошибка чтения почты: " + e.getMessage());
     }
     return result;
+  }
+
+  /**
+   * сравнить образец со строкой и выдать результат сравнения
+   * @param sample  - образец
+   * @param str     - строка
+   * @return  true - совпадает, false - не совпадает
+   */
+  private boolean compareStrings(String sample, String str)
+  {
+    return str.contains(sample);
   }
 
   /**

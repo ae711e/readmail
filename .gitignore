@@ -1,5 +1,2 @@
-.*
-_*
-out/*
-*.iml
-default.properties
+.idea/
+/src/ae/_r.java
