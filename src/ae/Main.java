@@ -49,7 +49,6 @@ public class Main {
                         Ignore = true;  // игнорировать регистр расширения
                         break;
 
-
                     case "-o":
                         outDir = args[i + 1];  // выходной каталог
                         break;
