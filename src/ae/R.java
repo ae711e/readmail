@@ -26,10 +26,11 @@ Modify:
   01.08.23  берет параметры из properties
   14.08.23  перед чтением письма с нужной темой сделать паузу 1 сек
   15.08.23  ключ -i регистронезависимости расширения
+  14.12.23  при ошибке чтения почты возвращается статус программы 1
 */
 
 public class R {
-  final static String Ver = "1.6"; // номер версии
+  final static String Ver = "1.7"; // номер версии
 
   // разделитель имени каталогов
   //public  final   static String sep = System.getProperty("file.separator");

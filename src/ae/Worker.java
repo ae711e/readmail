@@ -36,7 +36,7 @@ public class Worker {
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
    * @param ignoreExtCase   игнорировать регистр расширения
-   * @return  была ли запись
+   * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
   int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg, boolean ignoreExtCase)
   {
@@ -131,7 +131,8 @@ public class Worker {
       folder.close(true);  // false
       store.close();
     } catch (Exception e) {
-      System.err.println("Ошибка чтения почты: " + e.getMessage());
+      System.err.println("Ошибка чтения почты"); //  + e.getMessage()
+      return -1;  // ошибка чтения почты
     }
     return result;
   }
