@@ -83,9 +83,6 @@ public class Main {
             // Ошибка чтения почты
             System.exit(1);
         }
-        if(r == 0) {
-            System.out.println("Сообщений нет");
-        }
     }
 
     /**
