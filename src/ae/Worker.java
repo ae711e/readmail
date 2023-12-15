@@ -40,7 +40,7 @@ public class Worker {
    */
   int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg, boolean ignoreExtCase)
   {
-    final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss_");
+    final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
     int result = 0;
     //ArrayList<String[]> strRes = new ArrayList<>();
     // @see http://javatutor.net/articles/receiving-mail-with-mail-api
@@ -75,7 +75,8 @@ public class Worker {
         Date dt = mess.getSentDate();
         if(dt == null) dt = mess.getReceivedDate();  // как вариант
         if(dt == null) dt = new Date(); // ну просто сейчас :-)
-        String prefixAtt = sformat.format(dt); // префикс для сохранения вложений (дата письма)
+        String str = String.format("%03d", result + 1);  // последовательный номер для тотальной уникальности в записях
+        String prefixAtt = sformat.format(dt) + str + "_"; // префикс для сохранения вложений (дата письма)
         // тема письма
         String subj = mess.getSubject();
         //
@@ -83,7 +84,7 @@ public class Worker {
         // проверим тему
         int sootv = 0;  // кол-во подходящих вложений
         if(subj.contains(subjectStr)) {
-          R.sleep(1000);
+          // R.sleep(1000);
           // Письмо с изображением
           Object content = mess.getContent();
           if(content instanceof Multipart) {
