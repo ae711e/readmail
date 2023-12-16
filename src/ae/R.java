@@ -11,20 +11,21 @@ import java.util.Properties;
 
 /*
  * Ресурсный класс
- *
+ */
+/*
 Modify:
   06.10.21  ключи
   15.05.23  пароль для приложения в аккаунте pfoobmen и удалил поддержку sqlite
-  20.07.23  расширения регистронезависимые, сохраняем все подходящие вложения
   01.08.23  берет параметры из properties
   14.08.23  перед чтением письма с нужной темой сделать паузу 1 сек
-  15.08.23  ключ -i регистронезависимости расширения
   14.12.23  при ошибке чтения почты возвращается статус программы 1
   15.12.23  в префикс выходного файла добавил последовательный 3-значный номер (231215081850009_)
+  16.12.23  регистр расширения игнорируется
+
 */
 
 public class R {
-  final static String Ver = "2.1"; // номер версии
+  final static String Ver = "2.2"; // номер версии
 
   // разделитель имени каталогов
   //public  final   static String sep = System.getProperty("file.separator");
@@ -70,10 +71,7 @@ public class R {
             //
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
-        // Отобразим версию
-        System.out.println("Ver. " + Ver + "     e-mail: " + Email);
     }
 
     /**
@@ -348,7 +346,7 @@ public class R {
    * Вывод строки, в зависимости от флага Key_Verbose
    * @param message сообщение
    */
-  public static void printStr(String message)
+  public static void out(String message)
   {
     if(Key_Verbose) {
       System.out.println(message);

@@ -23,25 +23,25 @@ import java.util.Date;
   ---------------------------------------------------------------------
   https://mail.yandex.ru/?uid=861406129#setup/client
   разрешить доступ почтовых программ
-    Все настройки  >  Почтовые программы
+    Все настройки  >  Почтовые программы.
         Разрешить доступ к почтовому ящику с помощью почтовых клиентов
 
  */
 public class Worker {
 
   /**
-   * Чтение последнего по времени файла и запись его в каталог
+   * Читаем файлы из сообщений с заданной темой, записываем файлы с заданным расширением (регистр игнориуем) в каталог
    * @param subjectStr      строка темы
-   * @param extenStr        расширение файла вложения
+   * @param extStr        расширение файла вложения
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
-   * @param ignoreExtCase   игнорировать регистр расширения
    * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
-  int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg, boolean ignoreExtCase)
+  int read(String subjectStr, String extStr, String outDir, boolean deleteMsg)
   {
+    final String extension = extStr.toLowerCase();  // игнорируем регистр - сделаем нижним регистром
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
-    int result = 0;
+    int cnt = 0;  // количество писем с нужной темой
     //ArrayList<String[]> strRes = new ArrayList<>();
     // @see http://javatutor.net/articles/receiving-mail-with-mail-api
     // http://prostoitblog.ru/poluchenie-pochti-java-mail/
@@ -49,10 +49,6 @@ public class Worker {
     // http://toolkas.blogspot.com/2019/02/java.html
     // http://java-online.ru/javax-mail.xhtml
     // http://ryakovlev.blogspot.com/2014/11/java_17.html
-
-    if(ignoreExtCase) {
-      extenStr = extenStr.toLowerCase();  // если игнорируем регистр - сделаем нижним регистром
-    }
 
     try {
       // Получить store
@@ -64,78 +60,61 @@ public class Worker {
       assert store != null;
       // будем искать письма с вложениями и заполнять коллекцию
       folder = store.getFolder("INBOX");
-      folder.open(Folder.READ_WRITE); //  READ_ONLY
+      folder.open(deleteMsg? Folder.READ_WRITE: Folder.READ_ONLY); //  Folder.READ_WRITE, READ_ONLY
       messages = folder.getMessages();
-      // Отобразить поля from (только первый отправитель) и subject сообщений
+      // читаем сообщений
       for(Message mess: messages) {
-        //String fuel = m.getFrom()[0].toString(); // первый отправитель
-        //String from = extractEmail(fuel);  // выделим чистый e-mail
-        // дата письма
-        // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
-        Date dt = mess.getSentDate();
-        if(dt == null) dt = mess.getReceivedDate();  // как вариант
-        if(dt == null) dt = new Date(); // ну просто сейчас :-)
-        String str = String.format("%03d", result + 1);  // последовательный номер для тотальной уникальности в записях
-        String prefixAtt = sformat.format(dt) + str + "_"; // префикс для сохранения вложений (дата письма)
-        // тема письма
-        String subj = mess.getSubject();
-        //
-        R.printStr("письмо - дата: " + dt + ". тема: " + subj);
-        // проверим тему
-        int sootv = 0;  // кол-во подходящих вложений
+        R.sleep(400);
+        // дата письма @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
+        Date dt = mess.getSentDate();       // дата отправки письма
+        //if(dt == null) dt = new Date();     // ну просто сейчас :-)
+        String subj = mess.getSubject();    // тема письма
+        String menum = "(" + mess.getMessageNumber() + ")"; // номер сообщения в папке
+        R.out("Сообщение " + menum + "  Date: " + dt + "  Subj: " + subj);
         if(subj.contains(subjectStr)) {
-          // R.sleep(1000);
-          // Письмо с изображением
+          // Письмо с вложениями?
           Object content = mess.getContent();
-          if(content instanceof Multipart) {
-            // письмо может содержать вложения
-            // поищем их
+          if(content instanceof Multipart) {    // письмо может содержать вложения
             Multipart mp = (Multipart) content;
-            // ***************************************************
+            cnt++; // кол-во писем с нужной темой
+            // префикс для сохранения вложений письма (дата письма и последовательный номер письма)
+            String prefixAtt = String.format("%s%03d_", sformat.format(dt), cnt);
             // прочитаем все вложения
+            int sootv = 0;  // кол-во подходящих вложений
             int n = mp.getCount();
-            for (int i = 0; i < n; i++) {
-              BodyPart bp = mp.getBodyPart(i); // часть сообщения
-              String fileAttach = bp.getFileName();
-              if (fileAttach != null) {
-                // -----------------------------------------------
+            for(int i = 0; i < n; i++) {
+              BodyPart bp = mp.getBodyPart(i);        // часть сообщения
+              String fileAttach = bp.getFileName();   // имя файла вложения
+              if(fileAttach != null) {
                 // имеем дело с частью - вложением файла
                 String attach = MimeUtility.decodeText(fileAttach);  // раскодируем на всякий случай имя файла
-                // проверим расширение вложения (если игнор регистра, то все к нижнему регистру)
-                String sa = ignoreExtCase? attach.toLowerCase(): attach;
-                if (sa.endsWith(extenStr)) {
-                  // @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
-                  // записать вложение в выходной каталог
-                  String sfln;
-                  sfln = writeAttachFile(bp, outDir, prefixAtt);
-                  if (sfln != null) {
-                    System.out.println("  записан файл " + sfln);
+                // проверим расширение вложения (игнор регистра-все к нижнему регистру)
+                String sa = attach.toLowerCase();
+                if(sa.endsWith(extension)) {
+                  // записать вложение в вых. каталог @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
+                  String filename = writeAttachFile(bp, outDir, prefixAtt);
+                  if(filename != null) {
                     sootv++;  // записано в данном письме
-                    // всеобщий подсчет записанных вложений
-                    result++;
+                    R.out("  " + sootv + ". записан файл " + filename);
                   }
                 }
               }
             }
-          }
-          // если были соответствующие вложения и нужно надо удалить
-          // ставим метку на удаление
-          if (sootv > 0 && deleteMsg) {
-            mess.setFlag(Flags.Flag.DELETED, true);
+            // если были соответствующие вложения и нужно удалить
+            if(deleteMsg  &&  sootv > 0) {
+              mess.setFlag(Flags.Flag.DELETED, true); // ставим метку на удаление
+              R.out("  сообщение " + menum + " удалено");
+            }
           }
         }
       }
-      // удалить
-//      if(R.Key_Delete) {
-//        folder.expunge();
-//      }
-      folder.close(true);  // false
+      folder.close(true);  // закрыть папку и удалить сообщения
       store.close();
     } catch (Exception e) {
-      System.err.println("Ошибка чтения почты"); //  + e.getMessage()
+      System.err.println("Ошибка чтения почты  " + e.getMessage());
       return -1;  // ошибка чтения почты
     }
-    return result;
+    return cnt;
   }
 
   /**
