@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2021. Aleksey Eremin
  *
+ * 14.12.2023
+ *
  */
 
 package ae;
@@ -10,6 +12,8 @@ package ae;
     Поиск письма с заданной темой
     Запись на диск вложений из найденного письма с заданным расширением
     При необходимости (ключ -d) найденное письмо с записанными вложениемя удаляется
+
+    Если была ошибка чтения почты возвращает статус 1
 
  */
 
@@ -75,8 +79,8 @@ public class Main {
         Worker  w = new Worker();
         int r;
         r = w.read(Subj, Extn, outDir, Delete, Ignore);   // прочитать сообщения
-        if(r == 0) {
-            System.err.println("Сообщений нет");
+        if(r < 0) {
+            // Ошибка чтения почты
             System.exit(1);
         }
     }
@@ -98,4 +102,4 @@ public class Main {
           "" );
     }
 
-} // en of class
+} // end of class

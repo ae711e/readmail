@@ -36,11 +36,11 @@ public class Worker {
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
    * @param ignoreExtCase   игнорировать регистр расширения
-   * @return  была ли запись
+   * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
   int read(String subjectStr, String extenStr, String outDir, boolean deleteMsg, boolean ignoreExtCase)
   {
-    final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss_");
+    final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
     int result = 0;
     //ArrayList<String[]> strRes = new ArrayList<>();
     // @see http://javatutor.net/articles/receiving-mail-with-mail-api
@@ -75,15 +75,16 @@ public class Worker {
         Date dt = mess.getSentDate();
         if(dt == null) dt = mess.getReceivedDate();  // как вариант
         if(dt == null) dt = new Date(); // ну просто сейчас :-)
-        String prefixAtt = sformat.format(dt); // префикс для сохранения вложений (дата письма)
+        String str = String.format("%03d", result + 1);  // последовательный номер для тотальной уникальности в записях
+        String prefixAtt = sformat.format(dt) + str + "_"; // префикс для сохранения вложений (дата письма)
         // тема письма
         String subj = mess.getSubject();
         //
         R.printStr("письмо - дата: " + dt + ". тема: " + subj);
         // проверим тему
         int sootv = 0;  // кол-во подходящих вложений
-        if(compareStrings(subjectStr, subj)) {
-          R.sleep(1000);
+        if(subj.contains(subjectStr)) {
+          // R.sleep(1000);
           // Письмо с изображением
           Object content = mess.getContent();
           if(content instanceof Multipart) {
@@ -131,20 +132,10 @@ public class Worker {
       folder.close(true);  // false
       store.close();
     } catch (Exception e) {
-      System.err.println("Ошибка чтения почты: " + e.getMessage());
+      System.err.println("Ошибка чтения почты"); //  + e.getMessage()
+      return -1;  // ошибка чтения почты
     }
     return result;
-  }
-
-  /**
-   * сравнить образец со строкой и выдать результат сравнения
-   * @param sample  - образец
-   * @param str     - строка
-   * @return  true - совпадает, false - не совпадает
-   */
-  private boolean compareStrings(String sample, String str)
-  {
-    return str.contains(sample);
   }
 
   /**
