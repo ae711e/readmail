@@ -30,15 +30,17 @@ import java.util.Date;
 public class Worker {
 
   /**
-   * Читаем файлы из сообщений с заданной темой, записываем файлы с заданным расширением (регистр игнориуем) в каталог
-   * @param subjectStr      строка темы
-   * @param extStr        расширение файла вложения
+   * Читаем файлы из сообщений с заданной темой (регистр игнорируем), записываем файлы вложений
+   * с заданным именем вложения (регистр игнориуем) в каталог
+   * @param subjectStr      regex строка темы
+   * @param extStr          regex расширение файла вложения
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
    * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
   int read(String subjectStr, String extStr, String outDir, boolean deleteMsg)
   {
+    final String subject   =subjectStr.toLowerCase(); // игнорируем регистр - сделаем мальниким
     final String extension = extStr.toLowerCase();  // игнорируем регистр - сделаем нижним регистром
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
     int cnt = 0;  // количество писем с нужной темой
@@ -62,6 +64,7 @@ public class Worker {
       folder = store.getFolder("INBOX");
       folder.open(deleteMsg? Folder.READ_WRITE: Folder.READ_ONLY); //  Folder.READ_WRITE, READ_ONLY
       messages = folder.getMessages();
+      //
       // читаем сообщений
       for(Message mess: messages) {
         R.sleep(400);
@@ -71,7 +74,8 @@ public class Worker {
         String subj = mess.getSubject();    // тема письма
         String menum = "(" + mess.getMessageNumber() + ")"; // номер сообщения в папке
         R.out("Сообщение " + menum + "  Date: " + dt + "  Subj: " + subj);
-        if(subj.contains(subjectStr)) {
+        String ss = subj.toLowerCase();
+        if(ss.matches(subject)) {
           // Письмо с вложениями?
           Object content = mess.getContent();
           if(content instanceof Multipart) {    // письмо может содержать вложения
@@ -90,7 +94,8 @@ public class Worker {
                 String attach = MimeUtility.decodeText(fileAttach);  // раскодируем на всякий случай имя файла
                 // проверим расширение вложения (игнор регистра-все к нижнему регистру)
                 String sa = attach.toLowerCase();
-                if(sa.endsWith(extension)) {
+                if(sa.matches(extension)) {
+                //if(sa.endsWith(extension)) {
                   // записать вложение в вых. каталог @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
                   String filename = writeAttachFile(bp, outDir, prefixAtt);
                   if(filename != null) {
@@ -151,5 +156,6 @@ public class Worker {
     }
     return null;
   }
+
 
 } // end of class
