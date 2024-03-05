@@ -95,7 +95,6 @@ public class Worker {
                 // проверим расширение вложения (игнор регистра-все к нижнему регистру)
                 String sa = attach.toLowerCase();
                 if(sa.matches(extension)) {
-                //if(sa.endsWith(extension)) {
                   // записать вложение в вых. каталог @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
                   String filename = writeAttachFile(bp, outDir, prefixAtt);
                   if(filename != null) {

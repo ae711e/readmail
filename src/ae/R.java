@@ -23,11 +23,12 @@ Modify:
   16.12.23  регистр расширения игнорируется
   04.03.24  расширение теперь regex на имя файла вложения (регистр игнорируется) и тема письма тоже
   05.03.24  взял почту org.apache.geronimo.mail, чтобы декодировать имя файла вложения, если оно закодировано по RFC2231
+            добавил библ. активации java mail
 
 */
 
 public class R {
-  final static String Ver = "4.1"; // номер версии
+  final static String Ver = "4.3"; // номер версии
 
   // разделитель имени каталогов
   //public  final   static String sep = System.getProperty("file.separator");
