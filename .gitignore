@@ -1,2 +1,4 @@
 .idea/
-/src/ae/_r.java
+.*
+_*
+readmail.iml

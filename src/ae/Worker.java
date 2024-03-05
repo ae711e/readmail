@@ -16,10 +16,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.apache.geronimo.mail.util.RFC2231Encoder;
 
 /*
   Обработка почты и запись результата
-
   ---------------------------------------------------------------------
   https://mail.yandex.ru/?uid=861406129#setup/client
   разрешить доступ почтовых программ
@@ -89,9 +89,9 @@ public class Worker {
             for(int i = 0; i < n; i++) {
               BodyPart bp = mp.getBodyPart(i);        // часть сообщения
               String fileAttach = bp.getFileName();   // имя файла вложения
-              if(fileAttach != null) {
+              if(fileAttach != null && fileAttach.length() > 0) {
                 // имеем дело с частью - вложением файла
-                String attach = MimeUtility.decodeText(fileAttach);  // раскодируем на всякий случай имя файла
+                String attach = decodeString(fileAttach);  // раскодируем на всякий случай имя файла
                 // проверим расширение вложения (игнор регистра-все к нижнему регистру)
                 String sa = attach.toLowerCase();
                 if(sa.matches(extension)) {
@@ -134,7 +134,7 @@ public class Worker {
       if (bp.getFileName() != null) {
         String fn = bp.getFileName();
         // http://www.cyberforum.ru/java-j2se/thread1763814.html
-        String fname = MimeUtility.decodeText(fn);  // декодируем имя почтового файла вложения
+        String fname = decodeString(fn);  // декодируем имя почтового файла вложения
         // System.out.println("файл вложения: '" + fname + "'");
         // запишем во временный каталог
         File fout = new File(outDir, prefix+fname);
@@ -157,5 +157,20 @@ public class Worker {
     return null;
   }
 
+  private String  decodeString(String inp)
+  {
+    String out;
+    try {
+      out = MimeUtility.decodeText(inp);  // раскодируем на всякий случай имя файла
+      if(out.contains("%")) {
+        RFC2231Encoder enc = new RFC2231Encoder();
+        out = enc.decode(inp);
+      }
+    } catch (Exception e) {
+      System.err.println("?-Warning-неудачное преобразование: " + e.getMessage());
+      return inp;
+    }
+    return out;
+  }
 
 } // end of class

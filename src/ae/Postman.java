@@ -30,23 +30,23 @@ public class Postman
     Properties prop = System.getProperties();
     prop.put("mail.smtp.host", R.SmtpServer);
     prop.put("mail.smtp.port", R.SmtpPort);
-    Authenticator authenticator;
+    //Authenticator authenticator;
     if(username != null && username.length() > 0) {
       // наличие пароля предполагает SSL протокол отправки smtp
       prop.put("mail.smtp.auth", "true");
       prop.put("mail.smtp.socketFactory.port", R.SmtpPort);
       if (R.SmtpSSL.compareTo("true") == 0) // задан SSL протокол
         prop.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-      authenticator = new Authenticator() {
-        protected PasswordAuthentication getPasswordAuthentication() {
-          return new PasswordAuthentication(username, password);
-        }
-      };
+//      authenticator = new Authenticator() {
+//        protected PasswordAuthentication getPasswordAuthentication() {
+//          return new PasswordAuthentication(username, password);
+//        }
+//      };
     } else {
-      authenticator = null; // нет аутентификации
+      //  authenticator = null; // нет аутентификации
     }
     // делаем сессию для передачи сообщения
-    Session session = Session.getInstance(prop, authenticator);
+    Session session = Session.getInstance(prop);
     try {
       //
       MimeMessage msg = new MimeMessage(session);
@@ -121,14 +121,11 @@ public class Postman
     props.put("mail." + proto + ".ssl.enable", R.PostSSL);
     // https://www.mkyong.com/java/javamail-api-sending-email-via-gmail-smtp-example/
     props.put("mail." + proto + ".auth", "true"); // !!!
-    // Настроить аутентификацию, получить session
-    Authenticator auth = new Authenticator() {
-      protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication(username, password);
-      }
-    };
     //
-    Session session = Session.getDefaultInstance(props, auth);
+    // https://stackoverflow.com/questions/47921896/how-to-decode-an-attachment-chunked-filename-in-javamail
+    props.put("mail.mime.decodeparameters", "true");
+    //
+    Session session = Session.getDefaultInstance(props);
     try {
       // Получить store
       store = session.getStore(proto);
