@@ -79,6 +79,8 @@ public class Main {
         R.out("Ver. " + R.Ver + "  e-mail: " + R.Email);
         R.out("Subject: " + Subj + "   Extension: " + Extn);
         //
+        Postman.mailSend("a.eremin@grfc.ru", "Приветственная запись", "Привет Лёха!", null);
+
         Worker  w = new Worker();
         int r;
         r = w.read(Subj, Extn, outDir, Delete);   // прочитать сообщения

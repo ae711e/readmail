@@ -95,8 +95,8 @@ public class Worker {
                 // проверим расширение вложения (игнор регистра-все к нижнему регистру)
                 String sa = attach.toLowerCase();
                 if(sa.matches(extension)) {
-                  // записать вложение в вых. каталог @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
-                  String filename = writeAttachFile(bp, outDir, prefixAtt);
+                  // записать вложение в вых. каталог
+                  String filename = writeAttachFile(bp, outDir, prefixAtt + attach);
                   if(filename != null) {
                     sootv++;  // записано в данном письме
                     R.out("  " + sootv + ". записан файл " + filename);
@@ -123,20 +123,15 @@ public class Worker {
 
   /**
    * Записать файл вложением из части сообщения в указанный каталог
-   * @param bp      часть сообщения
-   * @param outDir  выходной каталог
-   * @param prefix  префикс имени выходного файла
+   * @param bp        часть сообщения
+   * @param outDir    выходной каталог
+   * @param fileName  имя выходного файла
    * @return имя записанного файла
    */
-  private String writeAttachFile(BodyPart bp, String outDir, String prefix) {
+  private String writeAttachFile(BodyPart bp, String outDir, String fileName)
+  {
     try {
-      if (bp.getFileName() != null) {
-        String fn = bp.getFileName();
-        // http://www.cyberforum.ru/java-j2se/thread1763814.html
-        String fname = decodeString(fn);  // декодируем имя почтового файла вложения
-        // System.out.println("файл вложения: '" + fname + "'");
-        // запишем во временный каталог
-        File fout = new File(outDir, prefix+fname);
+        File fout = new File(outDir, fileName);
         InputStream inps = bp.getInputStream();
         FileOutputStream outs = new FileOutputStream(fout);
         byte[] buf = new byte[8192];
@@ -146,16 +141,21 @@ public class Worker {
         }
         outs.close();
         inps.close();
-        String foutnam;
-        foutnam = fout.getPath();
-        return foutnam;
-      }
+        String fnam = fout.getPath();
+        return fnam;
     } catch (Exception e) {
       System.out.println("?-Error-writeAttachFile() " + e.getMessage());
     }
     return null;
   }
 
+  /**
+   * декодируем строку, по разным RFC
+   * https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/javax/mail/internet/MimeUtility.html#decodeText(java.lang.String)
+   * https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/org/apache/geronimo/mail/util/RFC2231Encoder.html
+   * @param inp закодированная по MIME строка
+   * @return раскодированная строка (если получилось)
+   */
   private String  decodeString(String inp)
   {
     String out;
@@ -166,7 +166,7 @@ public class Worker {
         out = enc.decode(inp);
       }
     } catch (Exception e) {
-      System.err.println("?-Warning-неудачное преобразование: " + e.getMessage());
+      System.err.println("?-Warning-неудачное преобразование MIME: " + e.getMessage());
       return inp;
     }
     return out;

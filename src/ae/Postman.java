@@ -21,7 +21,7 @@ import java.util.Properties;
 public class Postman
 {
 
-  public static boolean mailSend(String emailTo, String subject, String txtmsg, String fileAttachment)
+  public static boolean  mailSend(String emailTo, String subject, String txtmsg, String fileAttachment)
   {
     final String username = R.SmtpUser;
     final String password = R.SmtpPwd;
@@ -30,23 +30,25 @@ public class Postman
     Properties prop = System.getProperties();
     prop.put("mail.smtp.host", R.SmtpServer);
     prop.put("mail.smtp.port", R.SmtpPort);
-    //Authenticator authenticator;
+    Authenticator authenticator;
     if(username != null && username.length() > 0) {
       // наличие пароля предполагает SSL протокол отправки smtp
       prop.put("mail.smtp.auth", "true");
       prop.put("mail.smtp.socketFactory.port", R.SmtpPort);
-      if (R.SmtpSSL.compareTo("true") == 0) // задан SSL протокол
+      prop.put("mail.smtp.ssl.enable", R.SmtpSSL);
+      if (R.SmtpSSL.compareTo("true") == 0) { // задан SSL протокол
         prop.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-//      authenticator = new Authenticator() {
-//        protected PasswordAuthentication getPasswordAuthentication() {
-//          return new PasswordAuthentication(username, password);
-//        }
-//      };
+      }
+      authenticator = new Authenticator() {
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(username, password);
+        }
+      };
     } else {
-      //  authenticator = null; // нет аутентификации
+      authenticator = null; // нет аутентификации
     }
     // делаем сессию для передачи сообщения
-    Session session = Session.getInstance(prop);
+    Session session = Session.getInstance(prop, authenticator);
     try {
       //
       MimeMessage msg = new MimeMessage(session);
