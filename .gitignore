@@ -1,4 +1,5 @@
 .idea/
 .*
 _*
+out/
 readmail.iml

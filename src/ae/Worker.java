@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Pattern;
+
 import org.apache.geronimo.mail.util.RFC2231Encoder;
 
 /*
@@ -33,18 +35,25 @@ public class Worker {
    * Читаем файлы из сообщений с заданной темой (регистр игнорируем), записываем файлы вложений
    * с заданным именем вложения (регистр игнориуем) в каталог
    * @param subjectStr      regex строка темы
-   * @param extStr          regex расширение файла вложения
+   * @param attachStr       regex файла вложения
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
    * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
-  int read(String subjectStr, String extStr, String outDir, boolean deleteMsg)
+  int read(String subjectStr, String attachStr, String outDir, boolean deleteMsg)
   {
-    final String subject   =subjectStr.toLowerCase(); // игнорируем регистр - сделаем мальниким
-    final String extension = extStr.toLowerCase();  // игнорируем регистр - сделаем нижним регистром
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
     int cnt = 0;  // количество писем с нужной темой
-    //ArrayList<String[]> strRes = new ArrayList<>();
+    //
+    final Pattern patternSubject;
+    final Pattern patternAttach;
+    try {
+      patternSubject = Pattern.compile(subjectStr, Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
+      patternAttach  = Pattern.compile(attachStr,  Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
+    } catch (Exception e) {
+      System.err.println("Неправильный шаблон  " + e.getMessage());
+      return -1;  // ошибка чтения почты
+    }
     // @see http://javatutor.net/articles/receiving-mail-with-mail-api
     // http://prostoitblog.ru/poluchenie-pochti-java-mail/
     // https://www.pvsm.ru/java/16472
@@ -74,15 +83,13 @@ public class Worker {
         String subj = mess.getSubject();    // тема письма
         String menum = "(" + mess.getMessageNumber() + ")"; // номер сообщения в папке
         R.out("Сообщение " + menum + "  Date: " + dt + "  Subj: " + subj);
-        String ss = subj.toLowerCase();
-        if(ss.matches(subject)) {
+        // проверим тему (игнор регистра)
+        if(patternSubject.matcher(subj).find()) {
           // Письмо с вложениями?
           Object content = mess.getContent();
           if(content instanceof Multipart) {    // письмо может содержать вложения
             Multipart mp = (Multipart) content;
             cnt++; // кол-во писем с нужной темой
-            // префикс для сохранения вложений письма (дата письма и последовательный номер письма)
-            String prefixAtt = String.format("%s%03d_", sformat.format(dt), cnt);
             // прочитаем все вложения
             int sootv = 0;  // кол-во подходящих вложений
             int n = mp.getCount();
@@ -92,11 +99,12 @@ public class Worker {
               if(fileAttach != null && fileAttach.length() > 0) {
                 // имеем дело с частью - вложением файла
                 String attach = decodeString(fileAttach);  // раскодируем на всякий случай имя файла
-                // проверим расширение вложения (игнор регистра-все к нижнему регистру)
-                String sa = attach.toLowerCase();
-                if(sa.matches(extension)) {
+                // проверим расширение вложения (игнор регистра)
+                if(patternAttach.matcher(attach).find()) {
+                  // префикс для сохранения вложений письма (дата письма и последовательный номер письма)
+                  String prefix = String.format("%s%03d_", sformat.format(dt), cnt);
                   // записать вложение в вых. каталог
-                  String filename = writeAttachFile(bp, outDir, prefixAtt + attach);
+                  String filename = writeAttachFile(bp, outDir, prefix + attach);
                   if(filename != null) {
                     sootv++;  // записано в данном письме
                     R.out("  " + sootv + ". записан файл " + filename);
@@ -141,8 +149,7 @@ public class Worker {
         }
         outs.close();
         inps.close();
-        String fnam = fout.getPath();
-        return fnam;
+        return fout.getPath();
     } catch (Exception e) {
       System.out.println("?-Error-writeAttachFile() " + e.getMessage());
     }
@@ -151,8 +158,6 @@ public class Worker {
 
   /**
    * декодируем строку, по разным RFC
-   * https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/javax/mail/internet/MimeUtility.html#decodeText(java.lang.String)
-   * https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/org/apache/geronimo/mail/util/RFC2231Encoder.html
    * @param inp закодированная по MIME строка
    * @return раскодированная строка (если получилось)
    */
@@ -160,6 +165,8 @@ public class Worker {
   {
     String out;
     try {
+      // https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/javax/mail/internet/MimeUtility.html#decodeText(java.lang.String)
+      // https://geronimo.apache.org/maven/specs/geronimo-javamail_1.4_spec/1.6/apidocs/org/apache/geronimo/mail/util/RFC2231Encoder.html
       out = MimeUtility.decodeText(inp);  // раскодируем на всякий случай имя файла
       if(out.contains("%")) {
         RFC2231Encoder enc = new RFC2231Encoder();
