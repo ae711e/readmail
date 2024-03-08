@@ -44,8 +44,8 @@ public class Main {
                         Subj = args[++i];  // нужная тема
                         break;
 
-                    case "-e":
-                        Extn = args[++i];  // нужное расширение
+                    case "-a":
+                        Extn = args[++i];  // нужное вложение
                         break;
 
                     case "-d":
@@ -62,8 +62,8 @@ public class Main {
                         break;
 
                     default:
-                        //
-                        break;
+                        throw new IllegalArgumentException();
+
                 }
 
             }
@@ -77,7 +77,7 @@ public class Main {
 
         // Отобразим версию
         R.out("Ver. " + R.Ver + "  e-mail: " + R.Email);
-        R.out("Subject: " + Subj + "   Extension: " + Extn);
+        R.out("Subject: " + Subj + "   Attachment: " + Extn);
         //
         Postman.mailSend("a.eremin@grfc.ru", "Приветственная запись", "Привет Лёха!", null);
 
@@ -101,12 +101,12 @@ public class Main {
     {
         System.out.println("Чтение писем и запись их вложений. Версия " + R.Ver + "\n" +
           "Формат командной строки:\n" +
-          "[-v] [-s \"regex тема письма\"] [-e \"regex имя файла вложения\"] [-o выходной_каталог] [-d]\n" +
+          "[-v] [-s \"regex тема письма\"] [-a \"regex имя файла вложения\"] [-o выходной_каталог] [-d]\n" +
           "-d - удалить письмо, если его вложение записано\n" +
           "Регистр темы письма и имени вложения игнорируются.\n" +
           "Пример для ключа\n" +
                 " -s \".*_ПФО форма отчета Android VPN.*\"\n" +
-                " -e \"[0-9]{2}_ПФО форма отчета Android VPN.*xlsx\"\n" +
+                " -a \"[0-9]{2}_ПФО форма отчета Android VPN.*xlsx\"\n" +
                 "\n" +
           "Значения по умолчанию:\n" +
           "выходной каталог - текущий каталог\n" +

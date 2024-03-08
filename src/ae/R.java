@@ -24,12 +24,12 @@ Modify:
   04.03.24  расширение теперь regex на имя файла вложения (регистр игнорируется) и тема письма тоже
   05.03.24  взял почту org.apache.geronimo.mail, чтобы декодировать имя файла вложения, если оно закодировано по RFC2231
   06.03.24  добавил библ. активацию java mail
-  08.03.24  проверка с опциями CASE_INSENSITIVE
+  08.03.24  проверка с опциями CASE_INSENSITIVE, изменил ключ вложения на -a
 
 */
 
 public class R {
-  final static String Ver = "4.5"; // номер версии
+  final static String Ver = "4.6"; // номер версии
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики
