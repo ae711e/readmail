@@ -78,8 +78,6 @@ public class Main {
         // Отобразим версию
         R.out("Ver. " + R.Ver + "  e-mail: " + R.Email);
         R.out("Subject: " + Subj + "   Attachment: " + Extn);
-        //
-        Postman.mailSend("a.eremin@grfc.ru", "Приветственная запись", "Привет Лёха!", null);
 
         Worker  w = new Worker();
         int r;
