@@ -34,13 +34,14 @@ public class Worker {
   /**
    * Читаем файлы из сообщений с заданной темой (регистр игнорируем), записываем файлы вложений
    * с заданным именем вложения (регистр игнориуем) в каталог
+   * @param InputBox        входная папка писем (первая INBOX)
    * @param subjectStr      regex строка темы
    * @param attachStr       regex файла вложения
    * @param outDir          выходной каталог
    * @param deleteMsg       удалять сообщение, если оно было записано
    * @return  кол-во прочитанных вложений в письмах, -1 ошибка чтения почты
    */
-  int read(String subjectStr, String attachStr, String outDir, boolean deleteMsg)
+  int read(String InputBox, String subjectStr, String attachStr, String outDir, boolean deleteMsg)
   {
     final SimpleDateFormat sformat = new SimpleDateFormat("yyMMddHHmmss");
     int cnt = 0;  // количество писем с нужной темой
@@ -70,13 +71,13 @@ public class Worker {
       Message[] messages;
       assert store != null;
       // будем искать письма с вложениями и заполнять коллекцию
-      folder = store.getFolder("INBOX");
+      folder = store.getFolder(InputBox);   // "INBOX"
       folder.open(deleteMsg? Folder.READ_WRITE: Folder.READ_ONLY); //  Folder.READ_WRITE, READ_ONLY
       messages = folder.getMessages();
       //
       // читаем сообщений
       for(Message mess: messages) {
-        R.sleep(400);
+        R.sleep(200);
         // дата письма @see https://javaee.github.io/javamail/docs/api/javax/mail/Message.html#getSentDate--
         Date dt = mess.getSentDate();       // дата отправки письма
         //if(dt == null) dt = new Date();     // ну просто сейчас :-)
@@ -102,7 +103,7 @@ public class Worker {
                 // проверим расширение вложения (игнор регистра)
                 if(patternAttach.matcher(attach).find()) {
                   // префикс для сохранения вложений письма (дата письма и последовательный номер письма)
-                  String prefix = String.format("%s%03d_", sformat.format(dt), cnt);
+                  String prefix = String.format("%s%03d_", sformat.format(dt), (cnt % 1000));
                   // записать вложение в вых. каталог
                   String filename = writeAttachFile(bp, outDir, prefix + attach);
                   if(filename != null) {

@@ -25,11 +25,12 @@ Modify:
   05.03.24  взял почту org.apache.geronimo.mail, чтобы декодировать имя файла вложения, если оно закодировано по RFC2231
   06.03.24  добавил библ. активацию java mail
   08.03.24  проверка с опциями CASE_INSENSITIVE, изменил ключ вложения на -a
+  05.04.24  можно задать входную папку для чтения писем
 
 */
 
 public class R {
-  final static String Ver = "4.6"; // номер версии
+  final static String Ver = "5.1"; // номер версии
 
   // заданные ключи
   static public boolean   Key_Verbose = false;  // расширенный вывод диагностики

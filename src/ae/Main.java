@@ -26,6 +26,7 @@ public class Main {
     public static void main(String[] args) {
         // write your code here
         //
+        String InBox  = "INBOX";
         String outDir = ".";
         String Subj   = "test";
         String Extn   = "txt";
@@ -56,6 +57,10 @@ public class Main {
                         outDir = args[++i];  // выходной каталог
                         break;
 
+                    case "-f":
+                        InBox  = args[++i];
+                        break;
+
                     case "-?":
                         printHelp();
                         System.exit(3);
@@ -81,7 +86,7 @@ public class Main {
 
         Worker  w = new Worker();
         int r;
-        r = w.read(Subj, Extn, outDir, Delete);   // прочитать сообщения
+        r = w.read(InBox, Subj, Extn, outDir, Delete);   // прочитать сообщения
         if(r == 0) {
             R.out("не было сообщений");
             System.exit(2);
@@ -99,8 +104,9 @@ public class Main {
     {
         System.out.println("Чтение писем и запись их вложений. Версия " + R.Ver + "\n" +
           "Формат командной строки:\n" +
-          "[-v] [-s \"regex тема письма\"] [-a \"regex имя файла вложения\"] [-o выходной_каталог] [-d]\n" +
+          "[-v] [-s \"regex тема письма\"] [-a \"regex имя файла вложения\"] [-o выходной_каталог] [-d] [-f INBOX]\n" +
           "-d - удалить письмо, если его вложение записано\n" +
+          "-f INBOX входная папка писем" +
           "Регистр темы письма и имени вложения игнорируются.\n" +
           "Пример для ключа\n" +
                 " -s \".*_ПФО форма отчета Android VPN.*\"\n" +
